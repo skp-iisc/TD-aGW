@@ -1,12 +1,12 @@
 # Time-dependent adiabatic GW
 
-Introduction to time-dependent adiabatic GW (TD-aGW).
+The codes here attempt to implement the time-dependent adiabatic GW (TD-aGW).
 
 The goal is to calculate optical response of a material. It is obtained in three following ways.
 
 ## By GW-BSE
 
-The calculation is done on BerkeleyGW for silicon. Codes are in the [`gw-bse-silicon/`](gw-bse-silicon) folder.
+One standard way to obtain optical response is GW approximation followed by Bethe-Salpeter equation (GW-BSE). Here, it is done on BerkeleyGW for silicon. Codes are in the [`gw-bse-silicon/`](gw-bse-silicon) folder.
 
 Main reference: Jack Deslippe et al. In: Computer Physics Communications 183.6 (2012), pp. 1269–1289. ISSN: 0010-4655.
 
