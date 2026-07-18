@@ -1,0 +1,74 @@
+#!/bin/bash -l
+#SBATCH -t 00:30:00
+#SBATCH -p debug
+#SBATCH -n 32
+
+# These variables work on NERSC/Cori1:
+# module load espresso wannier90
+# PW="pw.x"
+# PW2BGW="pw2bgw.x"
+# PW2WAN="pw2wannier90.x"
+# WANNIER="wannier90.x"
+# MPIRUN="srun "
+# POOLS="-npools 32" #We only use pools for calculations with many k-points
+export OMP_NUM_THREADS=1
+
+# You can manually specify them if you don`t have modules for QE and Wannier90:
+PWDIR="$HOME/qe/q-e-qe-7.4.1/bin"
+PW="$PWDIR/pw.x"
+PW2BGW="$PWDIR/pw2bgw.x"
+PW2WAN="$PWDIR/pw2wannier90.x"
+#WANNIER="$HOME/wannier90-1.2/wannier90.x"
+WANNIER="wannier90.x"
+# put argument for number of procs here too if needed, e.g. -n 8
+MPIRUN="mpirun -np 20"
+POOLS="" #We only use pools for calculations with many k-points
+
+cd ./01-scf
+$MPIRUN $PW -in ./in &> ./out
+# rm ./*.wfc*
+echo "01-scf DONE"
+cd ..
+
+cd ./02-wfn
+$MPIRUN $PW -in ./in &> ./out
+$MPIRUN $PW2BGW -in ./pp_in &> ./pp_out
+# rm ./*.wfc*
+echo "02-wfn DONE"
+cd ..
+
+cd ./03-wfnq
+$MPIRUN $PW -in ./in &> ./out
+$MPIRUN $PW2BGW -in ./pp_in &> ./pp_out
+# rm ./*.wfc*
+echo "03-wfnq DONE"
+cd ..
+
+cd ./04-wfn_co
+$MPIRUN $PW -in ./in &> ./out
+$MPIRUN $PW2BGW -in ./pp_in &> ./pp_out
+# rm ./*.wfc*
+echo "04-wfn_co DONE"
+cd ..
+
+cd ./05-wfn_fi
+$MPIRUN $PW $POOLS -in ./in &> ./out
+$MPIRUN $PW2BGW -in ./pp_in &> ./pp_out
+# rm ./*.wfc*
+echo "05-wfn_fi DONE"
+cd ..
+
+cd ./06-wfnq_fi
+$MPIRUN $PW $POOLS -in ./in &> ./out
+$MPIRUN $PW2BGW -in ./pp_in &> ./pp_out
+# rm ./*.wfc*
+echo "06-wfnq_fi DONE"
+cd ..
+
+cd ./08-path
+$MPIRUN $PW $POOLS -in ./in &> ./out
+$MPIRUN $PW2BGW -in ./pp_in &> ./pp_out
+# rm ./*.wfc*
+echo "08-path DONE"
+cd ../
+
