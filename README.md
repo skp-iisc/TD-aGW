@@ -6,7 +6,7 @@ The goal is to calculate optical response of a material. It is obtained in three
 
 ## By GW-BSE
 
-The calculation is done on BerkeleyGW for silicon. Codes are in the [`silicon-gw-bse/`](silicon-gw-bse) folder.
+The calculation is done on BerkeleyGW for silicon. Codes are in the [`gw-bse-silicon/`](gw-bse-silicon) folder.
 
 Main reference: Jack Deslippe et al. In: Computer Physics Communications 183.6 (2012), pp. 1269–1289. ISSN: 0010-4655.
 
