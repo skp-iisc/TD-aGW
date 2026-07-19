@@ -1,8 +1,8 @@
 Quantum MASALA
  - Project Git Info:
-    - Commit hash:          fa23e92a924bd00dd80c36e2f0f1cc406dbb7edc
-    - Commit date and time: Saturday, 18 July, 2026 20:39:13
-Started calculation on 2026-07-19 at 03:04:07.
+    - Commit hash:          839aebf4bb7d7c3c87a0e7eadb553cbf88a0b8c1
+    - Commit date and time: Sunday, 19 July, 2026 13:15:06
+Started calculation on 2026-07-20 at 04:47:47.
 =========================================
 SCF Parameters:
 
@@ -49,7 +49,7 @@ numbnd         = 32
 is_spin        = False
 is_noncolin    = False
 symm_rho       = True
-rho_start      = <qtm.containers.field.get_FieldG.<locals>.FieldG object at 0x7f3c3afe2ab0>
+rho_start      = <qtm.containers.field.get_FieldG.<locals>.FieldG object at 0x72b6f95aecf0>
 wfn_init       = None
 libxc_func     = None
 occ_typ        = fixed
@@ -138,7 +138,7 @@ kpts           =
      0.6250  0.6250  0.6250; 0.015625
 
 =========================================
-Iteration # 1, Run Time:  17.6 sec
+Iteration # 1, Run Time:  17.3 sec
 Convergence Status   : NOT Converged
 SCF Error           : 2.0549e-01 Ry
 Avg Diago Iterations: 9.5
@@ -155,7 +155,7 @@ Total Energy:          -63.82831127 Ry
     LU Level:            6.89867275 eV
 ----------------------------------------
 
-Iteration # 2, Run Time:  24.5 sec
+Iteration # 2, Run Time:  24.1 sec
 Convergence Status   : NOT Converged
 SCF Error           : 2.1103e-01 Ry
 Avg Diago Iterations: 5.3
@@ -172,7 +172,7 @@ Total Energy:          -63.85447293 Ry
     LU Level:            6.89157214 eV
 ----------------------------------------
 
-Iteration # 3, Run Time:  29.6 sec
+Iteration # 3, Run Time:  29.0 sec
 Convergence Status   : NOT Converged
 SCF Error           : 8.1888e-03 Ry
 Avg Diago Iterations: 1.2
@@ -189,7 +189,7 @@ Total Energy:          -63.12676635 Ry
     LU Level:            7.07851268 eV
 ----------------------------------------
 
-Iteration # 4, Run Time:  38.0 sec
+Iteration # 4, Run Time:  37.3 sec
 Convergence Status   : NOT Converged
 SCF Error           : 1.6371e-04 Ry
 Avg Diago Iterations: 10.7
@@ -206,7 +206,7 @@ Total Energy:          -63.05012274 Ry
     LU Level:            7.12146729 eV
 ----------------------------------------
 
-Iteration # 5, Run Time:  47.8 sec
+Iteration # 5, Run Time:  46.9 sec
 Convergence Status   : NOT Converged
 SCF Error           : 7.3241e-07 Ry
 Avg Diago Iterations: 11.0
@@ -223,7 +223,7 @@ Total Energy:          -63.05461099 Ry
     LU Level:            7.12737137 eV
 ----------------------------------------
 
-Iteration # 6, Run Time:  60.3 sec
+Iteration # 6, Run Time:  59.2 sec
 Convergence Status   : NOT Converged
 SCF Error           : 9.8338e-08 Ry
 Avg Diago Iterations: 12.9
@@ -240,7 +240,7 @@ Total Energy:          -63.05569314 Ry
     LU Level:            7.12802094 eV
 ----------------------------------------
 
-Iteration # 7, Run Time:  68.4 sec
+Iteration # 7, Run Time:  67.2 sec
 Convergence Status   : NOT Converged
 SCF Error           : 1.5098e-08 Ry
 Avg Diago Iterations: 8.8
@@ -257,7 +257,7 @@ Total Energy:          -63.05550921 Ry
     LU Level:            7.12817068 eV
 ----------------------------------------
 
-Iteration # 8, Run Time:  76.5 sec
+Iteration # 8, Run Time:  75.2 sec
 Convergence Status   :  Converged
 SCF Error           : 5.3031e-10 Ry
 Avg Diago Iterations: 8.8

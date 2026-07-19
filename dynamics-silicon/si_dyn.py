@@ -46,9 +46,8 @@ diago_thr_init = 1e-2 * RYDBERG
 
 E0 = 1e-3     # initial pulse in Ha/Bohr
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Ground-state SCF (zero external field)
-# ─────────────────────────────────────────────────────────────────────────────
+
 out0 = scf(
     dftcomm,
     crystal,
@@ -66,114 +65,9 @@ out0 = scf(
     iter_printer=print_scf_status,
 )
 _, rho0, l_wfn0, en0 = out0
-# l_wfn0 : list[list[KSWfn]]
-#   outer list: k-points handled by this MPI rank
-#   inner list: spin channels
 
-i_kpts_kgrp = list(
-    range(kpts.numkpts)[scatter_slice(kpts.numkpts, dftcomm.n_kgrp, dftcomm.i_kgrp)]
-)
-
-full_wfn_gs = [None] * kpts.numkpts
-for ik_local, kswfn_k in enumerate(l_wfn0):
-    full_wfn_gs[i_kpts_kgrp[ik_local]] = kswfn_k[0]
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Reconstructing KSHam at each step
-# ─────────────────────────────────────────────────────────────────────────────
-FieldG_rho = get_FieldG(grho)
-v_ion_g = FieldG_rho.zeros(())
-rho_core = FieldG_rho.zeros(1)
-l_nloc = []
-for sp in crystal.l_atoms:
-    v_ion_sp, rho_core_sp = loc_generate_pot_rhocore(sp, grho)
-    v_ion_g += v_ion_sp
-    rho_core += rho_core_sp
-    l_nloc.append(NonlocGenerator(sp, gwfn))
-v_ion = v_ion_g.to_r()
-
-# XC functional identifier
-libxc_func = xc.get_libxc_func(crystal)
-
-def compute_vloc(rho_in: FieldGType) -> FieldRType:
-    v_hart, _ = hartree.compute(rho_in)
-    v_xc_r, _ = xc.compute(rho_in, rho_core, *libxc_func)
-    vloc = v_ion + v_hart + v_xc_r
-    vloc /= np.prod(gwfn.grid_shape)
-    return vloc
-
-def build_ksham(
-    kswfn: KSWfn,
-    vloc: FieldRType,
-    efield_cart=None,
-    ik_global: int = None,
-) -> KSHam:
-    """
-    Construct a KSHam for a single k-point (spin-unpolarized).
-
-    Parameters
-    ----------
-    kswfn : KSWfn
-        Provides the GkSpace (gkspc) for this k-point.
-    vloc : FieldRType
-        Full local potential, shape () in real space (scalar, spin-up channel).
-        Must already be divided by Nfft.
-    efield_cart : array-like of length 3, or None
-    ik_global : int or None
-    """
-    # vloc[0] selects the spin-up (only) channel
-    if efield_cart is not None:
-        return KSHam(
-            kswfn.gkspc, False, vloc[0], l_nloc,
-            efield_cart=list(efield_cart),
-            full_wfn=full_wfn_gs,
-            kpts=kpts,
-            kgrid_shape=mpgrid_shape,
-            ik=ik_global,
-            crystal=crystal,
-            current_kswfn=kswfn,
-        )
-    return KSHam(kswfn.gkspc, False, vloc[0], l_nloc)
-
-
-def hamiltonian_matrix(ksham: KSHam, psi0: np.ndarray) -> np.ndarray:
-    """
-    Compute H_{nm,k} at a k-point.
-
-    Parameters
-    ----------
-    ksham : KSHam
-        Kohn-Sham Hamiltonian for this k-point.
-    psi0 : ndarray, shape (numbnd, nG), complex128
-        Normalised ground-state KS orbitals in the plane-wave basis.
-
-    Returns
-    -------
-    H_k : ndarray, shape (numbnd, numbnd), complex128
-    """
-    gkspc = ksham.gkspc
-    WavefunG = get_WavefunG(gkspc, 1)
-
-    psi_wfn  = WavefunG(psi0.copy())
-    hpsi_wfn = WavefunG(np.zeros_like(psi0))
-
-    ksham.h_psi(psi_wfn, hpsi_wfn)
-    H_k = psi0.conj() @ hpsi_wfn.data.T   # shape (numbnd, numbnd)
-    return H_k
-
-def drho_dt(rho_k: np.ndarray, H_k: np.ndarray) -> np.ndarray:
-    return -1j * (H_k @ rho_k - rho_k @ H_k)
-
-def rk4_step(rho_k: np.ndarray, H_k: np.ndarray, dt: float) -> np.ndarray:
-    k1 = drho_dt(rho_k, H_k)
-    k2 = drho_dt(rho_k + 0.5 * dt * k1, H_k)
-    k3 = drho_dt(rho_k + 0.5 * dt * k2, H_k)
-    k4 = drho_dt(rho_k + dt * k3,  H_k)
-    return rho_k + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
-
-# ─────────────────────────────────────────────────────────────────────────────
 # Density matrix in the ground-state KS basis
-# ─────────────────────────────────────────────────────────────────────────────
+
 nk_local = len(l_wfn0)   # number of k-points on this MPI rank
 
 # Ground-state wavefunctions
@@ -191,9 +85,7 @@ for kswfn_k in l_wfn0:
     occ = kswfn_k[0].occ.copy()
     rho_now.append(np.diag(occ.astype(complex)))   # (numbnd, numbnd)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Linear Response
-# ─────────────────────────────────────────────────────────────────────────────
+# Velocity matrix elements
 
 vel_x_list = []   # v_x[ik], shape (numbnd, numbnd)
 evl_list   = []   # evl[ik], shape (numbnd,)
@@ -215,9 +107,8 @@ for ik_local, kswfn_k in enumerate(l_wfn0):
     v_x  = 0.5 * (v_x + v_x.conj().T)  # Ensure exact Hermiticity
     vel_x_list.append(v_x)
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Density Evolution and calculation of P(t)
-# ─────────────────────────────────────────────────────────────────────────────
+
 dt_prop = 0.02       # propagation dt [Ha]
 n_t     = 10000      # T = 200 Ha
 T_total = n_t * dt_prop
@@ -255,9 +146,7 @@ for ik_local, kswfn_k in enumerate(l_wfn0):
 
 print(f"  P_x range: [{P_t.min():.4e}, {P_t.max():.4e}]")
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Fourier transform for getting P_tilde(omega)
-# ─────────────────────────────────────────────────────────────────────────────
 
 sigma_smear  = 60.0
 gaussian_win = np.exp(-0.5 * (t_prop / sigma_smear)**2)
@@ -270,9 +159,8 @@ eps   = 1.0 + 4.0 * np.pi * P_tilde / E0
 eps1  = np.real(eps)
 eps2  = np.imag(eps)
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Outputs
-# ─────────────────────────────────────────────────────────────────────────────
+
 # import os
 # os.makedirs("outputs", exist_ok=True)
 # os.makedirs("save", exist_ok=True)
