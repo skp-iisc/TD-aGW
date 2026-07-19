@@ -25,9 +25,6 @@ comm_world = QTMComm(COMM_WORLD)
 # Only k-pt parallelization:
 dftcomm = DFTCommMod(comm_world, comm_world.size, 1)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# System setup
-# ─────────────────────────────────────────────────────────────────────────────
 crystal = sc_crystal('Si', alat=10.2612)
 
 mpgrid_shape = (10,10,10)
@@ -48,7 +45,7 @@ diago_thr_init = 1e-2 * RYDBERG
 E0 = 1e-4     # kick amplitude [Ha/Bohr]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 1: Ground-state SCF (zero external field)
+# Ground-state SCF (zero external field)
 # ─────────────────────────────────────────────────────────────────────────────
 out0 = scf(
     dftcomm,
@@ -80,9 +77,9 @@ for ik_local, kswfn_k in enumerate(l_wfn0):
     full_wfn_gs[i_kpts_kgrp[ik_local]] = kswfn_k[0]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 2: Precompute static objects needed to reconstruct KSHam at each step
+# Reconstruct KSHam
 # ─────────────────────────────────────────────────────────────────────────────
-# Ionic local potential + core density
+
 FieldG_rho = get_FieldG(grho)
 v_ion_g = FieldG_rho.zeros(())
 rho_core = FieldG_rho.zeros(1)
@@ -96,7 +93,6 @@ v_ion = v_ion_g.to_r()   # real-space ionic potential (unnormalised by Nfft)
 
 # XC functional identifier
 libxc_func = xc.get_libxc_func(crystal)
-
 
 def compute_vloc(rho_in: FieldGType) -> FieldRType:
     v_hart, _ = hartree.compute(rho_in)
@@ -153,8 +149,9 @@ def drho_dt(rho_k: np.ndarray, H_k: np.ndarray) -> np.ndarray:
     return -1j * (H_k @ rho_k - rho_k @ H_k)
 
 def rk4_step(rho_k: np.ndarray, H_k: np.ndarray, dt: float) -> np.ndarray:
-    k1 = drho_dt(rho_k,                  H_k)
+    k1 = drho_dt(rho_k, H_k)
     k2 = drho_dt(rho_k + 0.5 * dt * k1, H_k)
     k3 = drho_dt(rho_k + 0.5 * dt * k2, H_k)
-    k4 = drho_dt(rho_k +       dt * k3,  H_k)
+    k4 = drho_dt(rho_k + dt * k3,  H_k)
     return rho_k + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
+
