@@ -142,7 +142,7 @@ for ik_local, kswfn_k in enumerate(l_wfn0):
         drho_t = drho_0 * np.exp(-1j * deps * t)
         P_k[i] = np.real(np.sum(drho_t * obs_mat))
         
-    P_t += (2.0 / V_cell) * w_k * P_k
+    P_t += (1.0 / V_cell) * w_k * P_k
 
 print(f"  P_x range: [{P_t.min():.4e}, {P_t.max():.4e}]")
 
